@@ -21,10 +21,10 @@ A .NET Core Web API project implementing a shop management system using clean ar
 - SQL Server
 
 ### Setup
-1. Update connection string in `appsettings.json`:
+1. The database migrations are applied automatically on startup - you only need to provide a valid connection string in `appsettings.json`:
 ```json
 {
   "ConnectionStrings": {
-    "DefaultConnection": "Server=<your-server>;Database=ShopDb;Trusted_Connection=True;TrustServerCertificate=True"
+    "DefaultConnection": "Server=<your-server>;Database=ShopApi;Trusted_Connection=True;TrustServerCertificate=True;"
   }
 }
