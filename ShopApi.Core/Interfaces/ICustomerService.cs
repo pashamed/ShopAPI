@@ -8,16 +8,16 @@ namespace ShopApi.Core.Interfaces
 
         Task<CustomerDto?> GetCustomerByIdAsync(int id);
 
-        Task<CustomerDto> CreateCustomerAsync(CustomerDto customerDto);
+        Task<CustomerDto> CreateCustomerAsync(CustomerCreateDto customerDto);
 
-        Task<CustomerDto?> UpdateCustomerAsync(int id, CustomerDto customerDto);
+        Task<CustomerDto?> UpdateCustomerAsync(CustomerUpdateDto customerDto);
 
         Task<bool> DeleteCustomerAsync(int id);
 
         Task<IEnumerable<CustomerDto>> GetBirthdayCelebrantsAsync(DateOnly date);
 
-        Task<IEnumerable<CustomerDto>> GetRecentBuyersAsync(int days);
+        Task<IEnumerable<LastPurchaseDto>> GetRecentBuyersAsync(int days);
 
-        Task<IEnumerable<string>> GetPopularCategoriesAsync(int customerId);
+        Task<IEnumerable<CategoryPurchaseDto>> GetPopularCategoriesAsync(int customerId);
     }
 }

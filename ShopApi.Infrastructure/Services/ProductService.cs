@@ -34,17 +34,10 @@ namespace ShopApi.Infrastructure.Services
             var product = await _context.Products.FindAsync(id);
             if (product == null) return null;
 
-            return new ProductDto
-            {
-                Id = product.Id,
-                Name = product.Name,
-                Category = product.Category,
-                SKU = product.SKU,
-                Price = product.Price
-            };
+            return MapProductToDto(product);
         }
 
-        public async Task<ProductDto> CreateProductAsync(ProductDto productDto)
+        public async Task<ProductDto> CreateProductAsync(ProductCreateDto productDto)
         {
             var product = new Product
             {
@@ -57,22 +50,21 @@ namespace ShopApi.Infrastructure.Services
             _context.Products.Add(product);
             await _context.SaveChangesAsync();
 
-            productDto.Id = product.Id;
-            return productDto;
+            return MapProductToDto(product);
         }
 
-        public async Task<ProductDto?> UpdateProductAsync(int id, ProductDto productDto)
+        public async Task<ProductDto?> UpdateProductAsync(ProductUpdateDto productDto)
         {
-            var product = await _context.Products.FindAsync(id);
+            var product = await _context.Products.FindAsync(productDto.Id);
             if (product == null) return null;
 
-            product.Name = productDto.Name;
-            product.Category = productDto.Category;
-            product.SKU = productDto.SKU;
-            product.Price = productDto.Price;
+            product.Name = productDto.Name ?? product.Name;
+            product.Category = productDto.Category ?? product.Category;
+            product.SKU = productDto.SKU ?? product.SKU;
+            product.Price = productDto.Price ?? product.Price;
 
             await _context.SaveChangesAsync();
-            return productDto;
+            return MapProductToDto(product);
         }
 
         public async Task<bool> DeleteProductAsync(int id)
@@ -83,6 +75,18 @@ namespace ShopApi.Infrastructure.Services
             _context.Products.Remove(product);
             await _context.SaveChangesAsync();
             return true;
+        }
+
+        public static ProductDto MapProductToDto(Product product)
+        {
+            return new ProductDto
+            {
+                Id = product.Id,
+                Name = product.Name,
+                Category = product.Category,
+                SKU = product.SKU,
+                Price = product.Price,
+            };
         }
     }
 }

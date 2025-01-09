@@ -8,9 +8,9 @@ namespace ShopApi.Core.Interfaces
 
         Task<ProductDto?> GetProductByIdAsync(int id);
 
-        Task<ProductDto> CreateProductAsync(ProductDto productDto);
+        Task<ProductDto> CreateProductAsync(ProductCreateDto productDto);
 
-        Task<ProductDto?> UpdateProductAsync(int id, ProductDto productDto);
+        Task<ProductDto?> UpdateProductAsync(ProductUpdateDto productDto);
 
         Task<bool> DeleteProductAsync(int id);
     }

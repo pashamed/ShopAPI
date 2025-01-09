@@ -8,9 +8,9 @@ namespace ShopApi.Core.Interfaces
 
         Task<PurchaseDto?> GetPurchaseByIdAsync(int id);
 
-        Task<PurchaseDto> CreatePurchaseAsync(PurchaseDto purchaseDto);
+        Task<PurchaseDto> CreatePurchaseAsync(PurchaseCreateDto purchaseDto);
 
-        Task<PurchaseDto?> UpdatePurchaseAsync(int id, PurchaseDto purchaseDto);
+        Task<PurchaseDto?> UpdatePurchaseAsync(PurchaseUpdateDto purchaseDto);
 
         Task<bool> DeletePurchaseAsync(int id);
     }

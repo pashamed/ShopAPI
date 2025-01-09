@@ -1,21 +1,35 @@
-﻿using System.ComponentModel.DataAnnotations;
-
-namespace ShopApi.Core.Dtos
+﻿namespace ShopApi.Core.Dtos
 {
     public class PurchaseDto
     {
         public int Id { get; set; }
 
-        [Required]
         public DateOnly Date { get; set; }
 
-        [Required]
-        [Range(0.01, double.MaxValue)]
         public decimal TotalCost { get; set; }
 
-        [Required]
         public int CustomerId { get; set; }
 
-        public List<PurchaseItemDto> PurchaseItems { get; set; }
+        public List<PurchaseItemDto>? PurchaseItems { get; set; }
+    }
+
+    public class PurchaseCreateDto
+    {
+        public int CustomerId { get; set; }
+
+        public List<PurchaseItemCreateDto>? PurchaseItems { get; set; }
+    }
+
+    public class PurchaseUpdateDto
+    {
+        public int Id { get; set; }
+
+        public DateOnly? Date { get; set; }
+
+        public decimal? TotalCost { get; set; }
+
+        public int CustomerId { get; set; }
+
+        public List<PurchaseItemUpdateDto>? PurchaseItems { get; set; }
     }
 }

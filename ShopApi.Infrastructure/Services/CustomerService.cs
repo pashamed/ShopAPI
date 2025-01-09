@@ -33,16 +33,10 @@ namespace ShopApi.Infrastructure.Services
             var customer = await _context.Customers.FindAsync(id);
             if (customer == null) return null;
 
-            return new CustomerDto
-            {
-                Id = customer.Id,
-                FullName = customer.FullName,
-                DateOfBirth = customer.DateOfBirth,
-                RegistrationDate = customer.RegistrationDate
-            };
+            return MapToCustomerDto(customer);
         }
 
-        public async Task<CustomerDto> CreateCustomerAsync(CustomerDto customerDto)
+        public async Task<CustomerDto> CreateCustomerAsync(CustomerCreateDto customerDto)
         {
             var customer = new Customer
             {
@@ -54,20 +48,19 @@ namespace ShopApi.Infrastructure.Services
             _context.Customers.Add(customer);
             await _context.SaveChangesAsync();
 
-            customerDto.Id = customer.Id;
-            return customerDto;
+            return MapToCustomerDto(customer);
         }
 
-        public async Task<CustomerDto?> UpdateCustomerAsync(int id, CustomerDto customerDto)
+        public async Task<CustomerDto?> UpdateCustomerAsync(CustomerUpdateDto customerDto)
         {
-            var customer = await _context.Customers.FindAsync(id);
+            var customer = await _context.Customers.FindAsync(customerDto.Id);
             if (customer == null) return null;
 
             customer.FullName = customerDto.FullName ?? customer.FullName;
-            customer.DateOfBirth = customerDto.DateOfBirth;
+            customer.DateOfBirth = customerDto.DateOfBirth ?? customer.DateOfBirth;
 
             await _context.SaveChangesAsync();
-            return customerDto;
+            return MapToCustomerDto(customer);
         }
 
         public async Task<bool> DeleteCustomerAsync(int id)
@@ -94,35 +87,44 @@ namespace ShopApi.Infrastructure.Services
                 .ToListAsync();
         }
 
-        public async Task<IEnumerable<CustomerDto>> GetRecentBuyersAsync(int days)
+        public async Task<IEnumerable<LastPurchaseDto>> GetRecentBuyersAsync(int days)
         {
             var recentDate = DateOnly.FromDateTime(DateTime.Now.AddDays(-days));
             return await _context.Purchases
                 .Where(p => p.Date >= recentDate)
                 .GroupBy(p => p.Customer)
-                .Select(g => new CustomerDto
+                .Select(g => new LastPurchaseDto
                 {
-                    Id = g.Key.Id,
+                    CustomerId = g.Key.Id,
                     FullName = g.Key.FullName,
-                    DateOfBirth = g.Key.DateOfBirth,
-                    RegistrationDate = g.Key.RegistrationDate
+                    LastPurchaseDate = g.Max(p => p.Date)
                 })
                 .ToListAsync();
         }
 
-        public async Task<IEnumerable<string>> GetPopularCategoriesAsync(int customerId)
+        public async Task<IEnumerable<CategoryPurchaseDto>> GetPopularCategoriesAsync(int customerId)
         {
             return await _context.PurchaseItems
                 .Where(pi => pi.Purchase.CustomerId == customerId)
                 .GroupBy(pi => pi.Product.Category)
-                .Select(g => new
+                .Select(g => new CategoryPurchaseDto
                 {
                     Category = g.Key,
                     TotalUnits = g.Sum(pi => pi.Quantity)
                 })
                 .OrderByDescending(g => g.TotalUnits)
-                .Select(g => g.Category)
                 .ToListAsync();
+        }
+
+        private static CustomerDto MapToCustomerDto(Customer customer)
+        {
+            return new CustomerDto
+            {
+                Id = customer.Id,
+                FullName = customer.FullName,
+                DateOfBirth = customer.DateOfBirth,
+                RegistrationDate = customer.RegistrationDate
+            };
         }
     }
 }

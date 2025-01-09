@@ -1,25 +1,39 @@
-﻿using System.ComponentModel.DataAnnotations;
-
-namespace ShopApi.Core.Dtos
+﻿namespace ShopApi.Core.Dtos
 {
     public class ProductDto
     {
         public int Id { get; set; }
 
-        [Required]
-        [StringLength(100)]
         public string Name { get; set; }
 
-        [Required]
-        [StringLength(50)]
         public string Category { get; set; }
 
-        [Required]
-        [StringLength(20)]
         public string SKU { get; set; }
 
-        [Required]
-        [Range(0.01, double.MaxValue)]
         public decimal Price { get; set; }
+    }
+
+    public class ProductCreateDto
+    {
+        public string Name { get; set; }
+
+        public string Category { get; set; }
+
+        public string SKU { get; set; }
+
+        public decimal Price { get; set; }
+    }
+
+    public class ProductUpdateDto
+    {
+        public int Id { get; set; }
+
+        public string? Name { get; set; }
+
+        public string? Category { get; set; }
+
+        public string? SKU { get; set; }
+
+        public decimal? Price { get; set; }
     }
 }

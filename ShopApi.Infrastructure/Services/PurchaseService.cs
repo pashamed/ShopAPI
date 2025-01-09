@@ -57,12 +57,14 @@ namespace ShopApi.Infrastructure.Services
             };
         }
 
-        public async Task<PurchaseDto> CreatePurchaseAsync(PurchaseDto purchaseDto)
+        public async Task<PurchaseDto> CreatePurchaseAsync(PurchaseCreateDto purchaseDto)
         {
             var purchase = new Purchase
             {
-                Date = purchaseDto.Date,
-                TotalCost = purchaseDto.TotalCost,
+                Date = DateOnly.FromDateTime(DateTime.Now),
+                TotalCost = purchaseDto.PurchaseItems?.Count > 0
+                    ? purchaseDto.PurchaseItems.Sum(pi => pi.Quantity * _context.Products.Find(pi.ProductId)?.Price ?? 0)
+                    : 0,
                 CustomerId = purchaseDto.CustomerId,
                 PurchaseItems = purchaseDto.PurchaseItems.Select(pi => new PurchaseItem
                 {
@@ -74,31 +76,27 @@ namespace ShopApi.Infrastructure.Services
             _context.Purchases.Add(purchase);
             await _context.SaveChangesAsync();
 
-            purchaseDto.Id = purchase.Id;
-            return purchaseDto;
+            return MapToPurchaseDto(purchase);
         }
 
-        public async Task<PurchaseDto?> UpdatePurchaseAsync(int id, PurchaseDto purchaseDto)
+        public async Task<PurchaseDto?> UpdatePurchaseAsync(PurchaseUpdateDto purchaseDto)
         {
             var purchase = await _context.Purchases
                 .Include(p => p.PurchaseItems)
-                .FirstOrDefaultAsync(p => p.Id == id);
+                .FirstOrDefaultAsync(p => p.Id == purchaseDto.Id);
             if (purchase == null) return null;
 
-            purchase.Date = purchaseDto.Date;
-            purchase.TotalCost = purchaseDto.TotalCost;
+            purchase.Date = purchaseDto.Date ?? purchase.Date;       
             purchase.CustomerId = purchaseDto.CustomerId;
 
-            // Update purchase items
-            _context.PurchaseItems.RemoveRange(purchase.PurchaseItems);
-            purchase.PurchaseItems = purchaseDto.PurchaseItems.Select(pi => new PurchaseItem
-            {
-                ProductId = pi.ProductId,
-                Quantity = pi.Quantity
-            }).ToList();
+            // Update purchase items and cost
+            UpdatePurchaseItems(purchase, purchaseDto);
+            purchase.TotalCost = purchaseDto.PurchaseItems?.Count > 0
+                   ? purchaseDto.PurchaseItems.Sum(pi => pi.Quantity * _context.Products.Find(pi.ProductId)?.Price ?? 0)
+                   : 0;
 
             await _context.SaveChangesAsync();
-            return purchaseDto;
+            return MapToPurchaseDto(purchase);
         }
 
         public async Task<bool> DeletePurchaseAsync(int id)
@@ -111,6 +109,48 @@ namespace ShopApi.Infrastructure.Services
             _context.Purchases.Remove(purchase);
             await _context.SaveChangesAsync();
             return true;
+        }
+
+        private static PurchaseDto MapToPurchaseDto(Purchase purchase)
+        {
+            return new PurchaseDto
+            {
+                Id = purchase.Id,
+                Date = purchase.Date,
+                TotalCost = purchase.TotalCost,
+                CustomerId = purchase.CustomerId,
+                PurchaseItems = purchase.PurchaseItems.Select(pi => new PurchaseItemDto
+                {
+                    Id = pi.Id,
+                    ProductId = pi.ProductId,
+                    Quantity = pi.Quantity
+                }).ToList()
+            };
+        }
+
+        private void UpdatePurchaseItems(Purchase purchase, PurchaseUpdateDto purchaseUpdateDto)
+        {
+            var existingItemIds = purchaseUpdateDto.PurchaseItems.Select(pi => pi.Id).ToList();
+            var itemsToRemove = purchase.PurchaseItems.Where(pi => !existingItemIds.Contains(pi.Id)).ToList();
+            _context.PurchaseItems.RemoveRange(itemsToRemove);
+
+            foreach (var itemDto in purchaseUpdateDto.PurchaseItems)
+            {
+                var existingItem = purchase.PurchaseItems.FirstOrDefault(pi => pi.Id == itemDto.Id);
+                if (existingItem != null)
+                {
+                    existingItem.ProductId = itemDto.ProductId;
+                    existingItem.Quantity = itemDto.Quantity;
+                }
+                else
+                {
+                    purchase.PurchaseItems.Add(new PurchaseItem
+                    {
+                        ProductId = itemDto.ProductId,
+                        Quantity = itemDto.Quantity
+                    });
+                }
+            }
         }
     }
 }
