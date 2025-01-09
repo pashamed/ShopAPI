@@ -4,7 +4,6 @@ namespace ShopApi.Web
 {
     public static class ValidationErrorExtensions
     {
-
         public static IEnumerable<ValidationErrorResponse> ToValidationErrorResponse(this ValidationResult validationResult)
         {
             return validationResult.Errors.Select(e => new ValidationErrorResponse
@@ -20,5 +19,4 @@ namespace ShopApi.Web
         public string PropertyName { get; set; }
         public string ErrorMessage { get; set; }
     }
-
 }

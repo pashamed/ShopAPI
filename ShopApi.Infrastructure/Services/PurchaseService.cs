@@ -86,7 +86,7 @@ namespace ShopApi.Infrastructure.Services
                 .FirstOrDefaultAsync(p => p.Id == purchaseDto.Id);
             if (purchase == null) return null;
 
-            purchase.Date = purchaseDto.Date ?? purchase.Date;       
+            purchase.Date = purchaseDto.Date ?? purchase.Date;
             purchase.CustomerId = purchaseDto.CustomerId;
 
             // Update purchase items and cost
